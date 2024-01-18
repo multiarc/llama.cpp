@@ -27,6 +27,7 @@ static_assert(K_QUANTS_PER_ITERATION == 1 || K_QUANTS_PER_ITERATION == 2, "K_QUA
 #endif
 
 #define MULTILINE_QUOTE(...) #__VA_ARGS__
+#define CL_MEM_ALLOW_UNRESTRICTED_SIZE_INTEL (1 << 23)
 static std::string program_source = MULTILINE_QUOTE(
 
 typedef char int8_t;
@@ -1316,7 +1317,7 @@ static cl_mem ggml_cl_pool_malloc(size_t size, size_t * actual_size) {
          clReleaseMemObject(mem);
     }
     cl_mem mem;
-    CL_CHECK((mem = clCreateBuffer(context, CL_MEM_READ_WRITE, size, NULL, &err), err));
+    CL_CHECK((mem = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_ALLOW_UNRESTRICTED_SIZE_INTEL, size, NULL, &err), err));
     *actual_size = size;
     return mem;
 }
@@ -2021,7 +2022,7 @@ static ggml_backend_buffer_t ggml_backend_opencl_buffer_type_alloc_buffer(ggml_b
     ggml_cl_init();
 
     cl_int err;
-    cl_mem mem = clCreateBuffer(context, CL_MEM_READ_WRITE, size, NULL, &err);
+    cl_mem mem = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_ALLOW_UNRESTRICTED_SIZE_INTEL, size, NULL, &err);
     if (err != CL_SUCCESS) {
         fprintf(stderr, "%s: failed to allocate %.2f MiB\n", __func__, size / 1024.0 / 1024.0);
         return nullptr;
